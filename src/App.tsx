@@ -1,20 +1,14 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import React from 'react';
-import AirportAssetsManagement from './pages/kitckensink';
-// import AssetList from './components/AssetList';
-// import AssetForm from './components/AssetForm';
-// import Modal from './components/Modal';
-// import { useAssets } from './hooks/useAssets';
 import DashboardPage from './pages/DashboardPage';
-import AssetsPage from './pages/AssetsPage';
-// import LocationsPage from './pages/LocationsPage';
-import AdminPage from './pages/AdminPage';
-// import AssetDetailPage from './pages/AssetDetailPage';
+import AssetsPage from './features/assets/pages/AssetsPage';
+import AdminPage from './features/auth/pages/AdminPage';
 import MainLayout from './components/layout/MainLayout/Mainlayout';
 import { AuthProvider } from './features/auth/contexts/AuthContext';
 import LoginPage from './features/auth/pages/LoginPage';
 import ProtectedRoute from './features/auth/components/ProtectedRoute/ProtectedRoute';
+import { ToastContainer } from 'react-toastify';
 
 const App: React.FC = () => {
   return (
@@ -29,7 +23,6 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/kitchensink" element={<AirportAssetsManagement />} />
             <Route path="/assets" element={<AssetsPage />} />
             {/* <Route path="/assets/:id" element={<AssetDetailPage />} /> */}
             <Route path="/admin" element={
@@ -39,6 +32,7 @@ const App: React.FC = () => {
             } />
           </Route>
         </Routes>
+        <ToastContainer />
       </BrowserRouter>
     </AuthProvider>
   )

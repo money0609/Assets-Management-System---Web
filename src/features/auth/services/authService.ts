@@ -1,5 +1,5 @@
 import { apiClient as api } from '../../../services/apiClient';
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../types/auth-api.types';
+import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, UpdateUserRequest, UpdateUserResponse } from '../types/auth-api.types';
 import type { User } from '../types/auth.types';
 
 class AuthService {
@@ -46,6 +46,7 @@ class AuthService {
             }
         } : undefined;
         const response = await api.post<RegisterResponse>('/auth/register', data, config);
+        console.log('register authService: ', response);
         return response as unknown as RegisterResponse;
     }
 
@@ -57,6 +58,15 @@ class AuthService {
     async getAllUsers(): Promise<User[]> {
         const response = await api.get<User[]>('/auth/users');
         return response as unknown as User[];
+    }
+
+    async updateUser(id: number, data: UpdateUserRequest): Promise<UpdateUserResponse> {
+        const response = await api.put<UpdateUserResponse>(`/auth/users/${id}`, data);
+        return response as unknown as UpdateUserResponse;
+    }
+
+    async deleteUser(id: number): Promise<void> {
+        await api.delete(`/auth/users/${id}`);
     }
 };
 

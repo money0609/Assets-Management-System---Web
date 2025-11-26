@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Package, MapPin, Search, Plus, Edit2, Trash2 } from 'lucide-react';
-import { useAssets } from '../features/assets/hooks/useAssets';
-import { useAuth } from '../features/auth/hooks/useAuth';
+import { useAssets } from '../hooks/useAssets';
+import { useAuth } from '../../auth/hooks/useAuth';
 import type { AssetStatus, CreateAssetDTO } from '../types/asset.types';
-import type { CreateAssetRequest } from '../features/assets/types/asset-api.types';
-import Modal from '../components/Modal';
+import type { CreateAssetRequest } from '../types/asset-api.types';
+import Modal from '../../../components/Modal';
 import AssetForm from '../components/AssetForm';
 
 const AssetsPage: React.FC = () => {
-    const { assets, showModal, editingAsset, openCreateModal, openEditModal, closeModal, deleteAsset, createAsset, updateAsset } = useAssets();
+    const { assets, showModal, editingAsset, openCreateModal, openEditModal, closeModal, deleteAsset, createAsset, updateAsset, refresh } = useAssets();
     const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -24,10 +24,11 @@ const AssetsPage: React.FC = () => {
     // Filter assets based on search and status
     const filteredAssets = useMemo(() => {
         return assets.filter(asset => {
-            const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 asset.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 asset.location.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesStatus = filterStatus === 'All' || asset.status === filterStatus;
+            console.log(asset);
+            const matchesSearch = asset?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 asset?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                 asset?.location?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = filterStatus === 'All' || asset?.status === filterStatus;
             return matchesSearch && matchesStatus;
         });
     }, [assets, searchTerm, filterStatus]);
@@ -46,6 +47,7 @@ const AssetsPage: React.FC = () => {
     const handleDelete = async (id: number) => {
         if (window.confirm('Are you sure you want to delete this asset?')) {
             await deleteAsset(id);
+            refresh();
         }
     };
 
@@ -53,12 +55,18 @@ const AssetsPage: React.FC = () => {
         if (editingAsset) {
             // Update existing asset
             updateAsset(editingAsset.id, data as Partial<CreateAssetRequest>)
-                .then(() => closeModal())
+                .then(() => {
+                    closeModal();
+                    refresh();
+                })
                 .catch((err) => console.error('Failed to update asset:', err));
         } else {
             // Create new asset
             createAsset(data as CreateAssetRequest)
-                .then(() => closeModal())
+                .then(() => {
+                    closeModal();
+                    refresh();
+                })
                 .catch((err) => console.error('Failed to create asset:', err));
         }
     };

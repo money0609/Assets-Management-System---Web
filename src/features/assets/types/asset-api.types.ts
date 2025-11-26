@@ -1,4 +1,4 @@
-import type { Asset } from "../../../types/asset.types";
+import type { Asset } from "./asset.types";
 import type { PaginationParams } from "../../../types/common.types";
 
 export interface GetAssetsParams extends PaginationParams {

@@ -2,3 +2,12 @@
 button {
   cursor: pointer;
 }
+
+/* Hide text cursor (caret) but allow text selection on table cells */
+table td {
+  caret-color: transparent;
+}
+
+table td:focus {
+  outline: none;
+}

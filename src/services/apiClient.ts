@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
-import type { ApiError } from '../types/common.types';
+import type { ApiError, FastAPIValidationError } from '../types/common.types';
 
 const apiClient: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -25,13 +25,35 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response?.data,
     (error: AxiosError<ApiError>) => {
+        const responseData = error.response?.data;
+        
+        // Handle FastAPI validation errors (422) - detail can be string or array
+        let message = error.message;
+        if (responseData) {
+            if (responseData.detail) {
+                if (Array.isArray(responseData.detail)) {
+                    // Format validation errors: "field: error message"
+                    message = responseData.detail
+                        .map((err: FastAPIValidationError) => {
+                            const field = err.loc[err.loc.length - 1];
+                            return `${field}: ${err.msg}`;
+                        })
+                        .join(', ');
+                } else {
+                    message = responseData.detail as string;
+                }
+            } else if (responseData.message) {
+                message = responseData.message;
+            }
+        }
+        
         const apiError: ApiError = {
-            message: error.response?.data?.message || error.message,
-            code: error.response?.data?.code || error.response?.status?.toString(),
-            field: error.response?.data?.field,
+            message,
+            code: responseData?.code || error.response?.status?.toString(),
+            field: responseData?.field,
+            detail: responseData?.detail,
+            status: error.response?.status,
         };
-        // Add status code to error for better error handling
-        (apiError as ApiError & { status?: number }).status = error.response?.status;
         return Promise.reject(apiError);
     }
 );

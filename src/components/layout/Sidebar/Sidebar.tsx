@@ -22,7 +22,7 @@ const Sidebar: React.FC = () => {
 
     const roleInfo = user ? getRoleInfo(user.role) : getRoleInfo('unknown');
     const userDisplayName = user ? `${user.first_name} ${user.last_name}`.trim() || user.username : 'Guest';
-
+    const userInitials = user ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.trim() : '';
     // Get maintenance count (assets with status "Needs Repair")
     const maintenanceCount = assets?.filter(a => a.status === 'Needs Repair').length || 0;
 
@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
                 {user && (
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                         <div className={`w-10 h-10 ${roleInfo.bgColor} rounded-full flex items-center justify-center text-white font-bold text-sm shadow`}>
-                            {roleInfo.initials}
+                            {userInitials}
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="font-semibold text-gray-900 text-sm truncate">{userDisplayName}</div>

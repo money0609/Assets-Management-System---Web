@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Users, Search, Plus, Edit2, Trash2, Shield } from 'lucide-react';
-import { useAuth } from '../features/auth/hooks/useAuth';
-import { authService } from '../features/auth/services/authService';
-import type { User, UserRole } from '../features/auth/types/auth.types';
-import type { RegisterRequest } from '../features/auth/types/auth-api.types';
+import { useAuth } from '../hooks/useAuth';
+import { authService } from '../services/authService';
+import type { User, UserRole } from '../types/auth.types';
+import type { RegisterRequest } from '../types/auth-api.types';
+import type { ApiError, FastAPIValidationError } from '../../../types/common.types';
+import Modal from '../../../components/Modal';
+import { toast } from 'react-toastify';
 
 const AdminPage: React.FC = () => {
     const { user: currentUser } = useAuth();
@@ -49,8 +52,8 @@ const AdminPage: React.FC = () => {
     // Filter users based on search and role
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
-            const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
-            const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            const fullName = `${user?.first_name} ${user?.last_name}`.toLowerCase();
+            const matchesSearch = user?.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                  fullName.includes(searchTerm.toLowerCase());
             const matchesRole = filterRole === 'All' || user.role === filterRole;
             return matchesSearch && matchesRole;
@@ -75,7 +78,10 @@ const AdminPage: React.FC = () => {
     const handleDelete = async (id: number) => {
         if (window.confirm('Are you sure you want to delete this user?')) {
             // TODO: Implement delete user API call
-            setUsers(prev => prev.filter(u => u.id !== id));
+            const response = await authService.deleteUser(id);
+            console.log('delete user response: ', response);
+            const allUsers = await authService.getAllUsers();
+            setUsers(Array.isArray(allUsers) ? allUsers : []);
         }
     };
 
@@ -91,11 +97,15 @@ const AdminPage: React.FC = () => {
                 first_name: formData.get('first_name') as string,
                 last_name: formData.get('last_name') as string,
                 role: formData.get('role') as UserRole,
+                is_active: formData.get('is_active') as unknown as boolean,
             };
 
             if (editingUser) {
                 // TODO: Implement update user API call
-                setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...userData } : u));
+                const response = await authService.updateUser(editingUser.id, { ...userData, username: editingUser.username, password: editingUser.password });
+                console.log('update user response: ', response);
+                const newUser = (response as unknown as { user: User }).user;
+                setUsers(prev => [...prev, newUser]);
             } else {
                 // Create new user (admin registration)
                 const token = localStorage.getItem('token');
@@ -109,8 +119,25 @@ const AdminPage: React.FC = () => {
             const allUsers = await authService.getAllUsers();
             setUsers(Array.isArray(allUsers) ? allUsers : []);
             handleCloseModal();
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to save user:', err);
+            const error = err as ApiError;
+            // Show detailed validation errors for 422 status (FastAPI format)
+            if (error.status === 422 && error.detail) {
+                if (Array.isArray(error.detail)) {
+                    const errorMessages = error.detail
+                        .map((e: FastAPIValidationError) => {
+                            const field = e.loc[e.loc.length - 1];
+                            return `${String(field)}: ${e.msg}`;
+                        })
+                        .join('\n');
+                    toast.error(`Validation failed:\n${errorMessages}`);
+                } else {
+                    toast.error(`Validation failed: ${error.detail}`);
+                }
+            } else {
+                toast.error('Failed! ' + (error?.message || 'Unknown error'));
+            }
         } finally {
             setLoading(false);
         }
@@ -160,6 +187,7 @@ const AdminPage: React.FC = () => {
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Is Active</th>
                                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -177,8 +205,8 @@ const AdminPage: React.FC = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredUsers.map(user => (
-                                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                filteredUsers.map((user, index) => (
+                                    <tr key={index} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
                                                 <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
@@ -186,17 +214,22 @@ const AdminPage: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <div className="font-medium text-gray-900">
-                                                        {user.first_name} {user.last_name}
+                                                        {user?.first_name} {user?.last_name}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">ID: {user.id}</div>
+                                                    <div className="text-sm text-gray-500">ID: {user?.id}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{user.username}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{user?.username}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getRoleInfo(user.role).bgColor}`}>
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getRoleInfo(user?.role).bgColor}`}>
                                                 <Shield className="w-3 h-3 mr-1" />
-                                                {getRoleInfo(user.role).name}
+                                                {getRoleInfo(user?.role).name}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${user?.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>
+                                                {user?.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -208,9 +241,9 @@ const AdminPage: React.FC = () => {
                                                 >
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                {user.id !== currentUser?.id && (
+                                                {user?.id !== currentUser?.id && (
                                                     <button
-                                                        onClick={() => handleDelete(user.id)}
+                                                        onClick={() => handleDelete(user?.id)}
                                                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                         title="Delete"
                                                     >
@@ -229,22 +262,8 @@ const AdminPage: React.FC = () => {
 
             {/* Modal for Add/Edit User */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={(e) => e.target === e.currentTarget && handleCloseModal()}>
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-                            <h2 className="text-2xl font-bold text-gray-900">
-                                {editingUser ? 'Edit User' : 'Add New User'}
-                            </h2>
-                            <button
-                                onClick={handleCloseModal}
-                                className="!p-2 !bg-white hover:!bg-gray-100 !rounded-lg !font-medium !transition-colors !border-0 !shadow-none focus:!outline-none focus-visible:!outline-none"
-                                aria-label="Close modal"
-                            >
-                                <span className="text-gray-500 text-xl">×</span>
-                            </button>
-                        </div>
-                        
-                        <form onSubmit={handleSave} className="p-6 space-y-6">
+                <Modal onClose={handleCloseModal} title={editingUser ? 'Edit User' : 'Add New User'}>
+                    <form onSubmit={handleSave} className="p-6 space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -271,22 +290,65 @@ const AdminPage: React.FC = () => {
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Role *
-                                </label>
-                                <select
-                                    name="role"
-                                    defaultValue={editingUser?.role || 'viewer'}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-                                    required
-                                >
-                                    {roleOptions.map(role => (
-                                        <option key={role} value={role}>{getRoleInfo(role).name}</option>
-                                    ))}
-                                </select>
+                            {
+                                !editingUser && (
+                                    <div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Username *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="username"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                Password *
+                                            </label>
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                required
+                                            />  
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Role *
+                                    </label>
+                                    <select
+                                        name="role"
+                                        defaultValue={editingUser?.role || 'viewer'}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                                        required
+                                    >
+                                        {roleOptions.map(role => (
+                                            <option key={role} value={role}>{getRoleInfo(role).name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Is Active *
+                                    </label>
+                                    <select
+                                        name="is_active"
+                                        defaultValue={editingUser?.is_active ? 'Active' : 'Inactive'}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                                        required
+                                    >
+                                        <option value="true">Active</option>
+                                        <option value="false">Inactive</option>
+                                    </select>   
+                                </div>
                             </div>
-
                             <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
                                 <button
                                     type="button"
@@ -303,9 +365,8 @@ const AdminPage: React.FC = () => {
                                     {loading ? 'Saving...' : editingUser ? 'Update User' : 'Create User'}
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
+                    </form>
+                </Modal>
             )}
         </div>
     );

@@ -8,7 +8,7 @@ interface AssetFormProps {
     onCancel: () => void;
 }
 
-const AsssetForm: React.FC<AssetFormProps> = ({ asset, onSave, onCancel }) => {
+const AssetForm: React.FC<AssetFormProps> = ({ asset, onSave, onCancel }) => {
     // All available status options
     const statusOptions: AssetStatus[] = ['Available', 'In Use', 'Needs Repair', 'Unknown'];
 
@@ -107,4 +107,4 @@ const AsssetForm: React.FC<AssetFormProps> = ({ asset, onSave, onCancel }) => {
     );
 };
 
-export default AsssetForm;
+export default AssetForm;

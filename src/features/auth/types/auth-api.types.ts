@@ -1,4 +1,4 @@
-import type { User } from './auth.types';
+import type { User, UserRole } from './auth.types';
 
 export interface LoginRequest {
     username: string;
@@ -15,6 +15,8 @@ export interface RegisterRequest {
     password: string;
     first_name: string;
     last_name: string;
+    is_active: boolean;
+    role: UserRole;
 }
 
 export interface RegisterResponse {
@@ -22,3 +24,16 @@ export interface RegisterResponse {
     token: string;
 }
 
+export interface UpdateUserRequest {
+    username: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    role: UserRole;
+    is_active: boolean;
+}
+
+export interface UpdateUserResponse {
+    user: User;
+    token: string;
+}

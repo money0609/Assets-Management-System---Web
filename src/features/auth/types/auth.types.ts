@@ -1,5 +1,7 @@
 export type UserRole = 'admin' | 'manager' | 'viewer' | 'unknown';
 export interface User {
+    is_active: boolean;
+    password: string;
     id: number;
     username: string;
     first_name: string;

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package, Activity, Settings, Plus, Download } from 'lucide-react';
 import { useAssets } from '../features/assets/hooks/useAssets';
 import { useAuth } from '../features/auth/hooks/useAuth';
-import type { AssetStatus } from '../types/asset.types';
+import type { AssetStatus } from '../features/assets/types/asset.types';
 
 const DashboardPage: React.FC = () => {
     const { assets } = useAssets();

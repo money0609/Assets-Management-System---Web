@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { Asset } from '../../../types/asset.types';
+import type { Asset } from '../types/asset.types';
 import type { CreateAssetRequest, GetAssetsParams } from '../types/asset-api.types';
 import type { ApiError } from '../../../types/common.types';
 import { assetService } from '../services/assetService';
@@ -15,7 +15,7 @@ interface UseAsstsReturn {
     closeModal: () => void;
     createAsset: (assetData: CreateAssetRequest) => Promise<void>;
     updateAsset: (id: number, assetData: Partial<CreateAssetRequest>) => Promise<void>;
-    deleteAsset: (id: number) => void;
+    deleteAsset: (id: number) => Promise<void>;
     refresh: () => Promise<void>;
 }
 
@@ -49,6 +49,7 @@ export const useAssets = (params?: GetAssetsParams): UseAsstsReturn => {
     const createAsset = useCallback(async (assetData: CreateAssetRequest): Promise<void> => {
         try {
             const newAsset = await assetService.create(assetData);
+            console.log('createAsset useAssets: ', newAsset);
             setAssets(prev => [...prev, newAsset]);
         } catch (err) {
             setError(err as ApiError);

@@ -1,5 +1,5 @@
 import { apiClient as api } from "../../../services/apiClient";
-import type { Asset } from "../../../types/asset.types";
+import type { Asset } from "../types/asset.types";
 import type { 
     GetAssetsParams, 
     GetAssetsResponse,
@@ -24,17 +24,17 @@ class AssetService {
       }
     
       async create(data: CreateAssetRequest): Promise<CreateAssetResponse> {
-        const response = await api.post<CreateAssetResponse>(this.basePath, data);
+        const response = await api.post<CreateAssetResponse>(`${this.basePath}/create`, data);
         return response.data;
       }
     
       async update(id: number, data: UpdateAssetRequest): Promise<UpdateAssetResponse> {
-        const response = await api.put<UpdateAssetResponse>(`${this.basePath}/${id}`, data);
+        const response = await api.put<UpdateAssetResponse>(`${this.basePath}/update/${id}`, data);
         return response.data;
       }
     
       async delete(id: number): Promise<void> {
-        await api.delete(`${this.basePath}/${id}`);
+        await api.delete(`${this.basePath}/delete/${id}`);
       }
 }
 
