@@ -24,7 +24,6 @@ const AssetsPage: React.FC = () => {
     // Filter assets based on search and status
     const filteredAssets = useMemo(() => {
         return assets.filter(asset => {
-            console.log(asset);
             const matchesSearch = asset?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                  asset?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                  asset?.location?.toLowerCase().includes(searchTerm.toLowerCase());

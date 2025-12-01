@@ -1,8 +1,15 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
 import type { ApiError, FastAPIValidationError } from '../types/common.types';
 
+// Validate environment variable
+const apiUrl = import.meta.env.VITE_API_URL;
+if (!apiUrl) {
+    console.error('VITE_API_URL is not defined. Please set it in your .env file.');
+    throw new Error('VITE_API_URL environment variable is required');
+}
+
 const apiClient: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: apiUrl,
     headers: {
         'Content-Type': 'application/json',
     },

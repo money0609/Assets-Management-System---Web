@@ -29,7 +29,6 @@ export const useAssets = (params?: GetAssetsParams): UseAsstsReturn => {
 
     const loadAssets = useCallback(async (): Promise<void> => {
         try {
-            console.log('loadAssets useAssets');
             setLoading(true);
             setError(null);
             const response = await assetService.getALL(params);
@@ -49,7 +48,6 @@ export const useAssets = (params?: GetAssetsParams): UseAsstsReturn => {
     const createAsset = useCallback(async (assetData: CreateAssetRequest): Promise<void> => {
         try {
             const newAsset = await assetService.create(assetData);
-            console.log('createAsset useAssets: ', newAsset);
             setAssets(prev => [...prev, newAsset]);
         } catch (err) {
             setError(err as ApiError);

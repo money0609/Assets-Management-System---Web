@@ -9,7 +9,6 @@ const DashboardPage: React.FC = () => {
     const { assets } = useAssets();
     const { user } = useAuth();
     const navigate = useNavigate();
-    console.log('DashboardPage assets: ', assets);
     // Map actual asset statuses to display categories
     const getStatusCount = (status: AssetStatus): number => {
         return assets?.filter(a => a.status === status).length || 0;

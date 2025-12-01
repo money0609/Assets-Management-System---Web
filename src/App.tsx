@@ -4,6 +4,7 @@ import React from 'react';
 import DashboardPage from './pages/DashboardPage';
 import AssetsPage from './features/assets/pages/AssetsPage';
 import AdminPage from './features/auth/pages/AdminPage';
+import NotFoundPage from './pages/NotFoundPage';
 import MainLayout from './components/layout/MainLayout/Mainlayout';
 import { AuthProvider } from './features/auth/contexts/AuthContext';
 import LoginPage from './features/auth/pages/LoginPage';
@@ -31,6 +32,9 @@ const App: React.FC = () => {
               </ProtectedRoute>
             } />
           </Route>
+          
+          {/* 404 - Catch all unmatched routes */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
         <ToastContainer />
       </BrowserRouter>

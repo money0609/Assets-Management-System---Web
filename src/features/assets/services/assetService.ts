@@ -14,24 +14,27 @@ class AssetService {
 
     async getALL(params?: GetAssetsParams): Promise<GetAssetsResponse> {
         // apiClient interceptor returns response.data, so response is already the data
-        const response = await api.get<GetAssetsResponse>(this.basePath, { params });
-        console.log('getALL assetService: ', response);
+        // Add trailing slash to avoid 307 redirect from backend
+        const response = await api.get<GetAssetsResponse>(`${this.basePath}/`, { params });
         return response as unknown as GetAssetsResponse;
     }
     async getById(id: number): Promise<Asset> {
+        // apiClient interceptor returns response.data, so response is already the data
         const response = await api.get<Asset>(`${this.basePath}/${id}`);
-        return response.data;
-      }
+        return response as unknown as Asset;
+    }
     
-      async create(data: CreateAssetRequest): Promise<CreateAssetResponse> {
+    async create(data: CreateAssetRequest): Promise<CreateAssetResponse> {
+        // apiClient interceptor returns response.data, so response is already the data
         const response = await api.post<CreateAssetResponse>(`${this.basePath}/create`, data);
-        return response.data;
-      }
+        return response as unknown as CreateAssetResponse;
+    }
     
-      async update(id: number, data: UpdateAssetRequest): Promise<UpdateAssetResponse> {
+    async update(id: number, data: UpdateAssetRequest): Promise<UpdateAssetResponse> {
+        // apiClient interceptor returns response.data, so response is already the data
         const response = await api.put<UpdateAssetResponse>(`${this.basePath}/update/${id}`, data);
-        return response.data;
-      }
+        return response as unknown as UpdateAssetResponse;
+    }
     
       async delete(id: number): Promise<void> {
         await api.delete(`${this.basePath}/delete/${id}`);

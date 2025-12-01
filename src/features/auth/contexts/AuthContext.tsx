@@ -53,19 +53,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     useEffect(() => {
         // Check if user is logged in
         const token = localStorage.getItem('token');
-        console.log('AuthContext: Checking for token on mount:', token ? 'Token found' : 'No token');
         if (token) {
-            console.log('AuthContext: Loading user with token');
             loadUser();
         } else {
-            console.log('AuthContext: No token found, skipping user load');
             setLoading(false);
         }
     }, [loadUser]);
 
     const login = useCallback(async (credentials: LoginRequest): Promise<LoginResponse> => {
         const response = await authService.login(credentials);
-        console.log('login authcontext', response);
         localStorage.setItem('token', response.token);
         setUser(response.user);
         return response;

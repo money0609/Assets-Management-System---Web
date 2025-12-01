@@ -46,7 +46,6 @@ class AuthService {
             }
         } : undefined;
         const response = await api.post<RegisterResponse>('/auth/register', data, config);
-        console.log('register authService: ', response);
         return response as unknown as RegisterResponse;
     }
 

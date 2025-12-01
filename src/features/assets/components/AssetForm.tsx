@@ -46,6 +46,18 @@ const AssetForm: React.FC<AssetFormProps> = ({ asset, onSave, onCancel }) => {
             </div>
             <div >
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Asset Type
+                </label>
+                <input
+                    type="text"
+                    value={formData.type}
+                    onChange={(e) => handleChange('type', e.target.value)}
+                    placeholder="Asset Type"
+                    className="w-full text-gray-700 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+            </div>
+            <div >
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Asset Description *
                 </label>
                 <textarea

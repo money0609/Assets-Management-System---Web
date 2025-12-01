@@ -12,4 +12,25 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+  build: {
+    outDir: 'dist',
+    sourcemap: false, // Disable source maps in production for security
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          axios: ['axios'],
+        },
+      },
+    },
+  },
+  server: {
+    port: 5173,
+    strictPort: false,
+  },
+  preview: {
+    port: 4173,
+    strictPort: false,
+  },
 })
