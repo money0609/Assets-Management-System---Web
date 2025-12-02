@@ -16,7 +16,7 @@ const App: React.FC = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          
 
           <Route element={
             <ProtectedRoute>
@@ -24,6 +24,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/assets" element={<AssetsPage />} />
             {/* <Route path="/assets/:id" element={<AssetDetailPage />} /> */}
             <Route path="/admin" element={
